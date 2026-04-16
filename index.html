@@ -945,34 +945,69 @@
     </div>
     <div class="footer-col">
       <h4>Rechtliches</h4>
-      <a href="#" onclick="showPage('impressum')">Impressum</a>
-      <a href="#" onclick="showPage('datenschutz')">Datenschutz</a>
-      <a href="#" onclick="showPage('agb')">AGB</a>
+      <a href="#impressum" onclick="showPage('impressum')">Impressum</a>
+      <a href="#datenschutz" onclick="showPage('datenschutz')">Datenschutz</a>
+      <a href="#agb" onclick="showPage('agb')">AGB</a>
     </div>
     <div class="footer-col">
       <h4>Support</h4>
-      <a href="#" onclick="showPage('support')">Hilfe & FAQ</a>
+      <a href="#support" onclick="showPage('support')">Hilfe & FAQ</a>
       <a href="mailto:support@getoffmode.de">Kontakt</a>
     </div>
   </div>
   <div class="footer-bottom">
     <p>© 2026 Offmode · Luca Schneider · Alle Rechte vorbehalten</p>
     <div>
-      <a href="#" onclick="showPage('impressum')">Impressum</a>
-      <a href="#" onclick="showPage('datenschutz')">Datenschutz</a>
-      <a href="#" onclick="showPage('agb')">AGB</a>
-      <a href="#" onclick="showPage('support')">Support</a>
+      <a href="#impressum" onclick="showPage('impressum')">Impressum</a>
+      <a href="#datenschutz" onclick="showPage('datenschutz')">Datenschutz</a>
+      <a href="#agb" onclick="showPage('agb')">AGB</a>
+      <a href="#support" onclick="showPage('support')">Support</a>
     </div>
   </div>
 </footer>
 
 <script>
   function showPage(page) {
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-    document.getElementById('page-' + (page === 'home' ? 'home' : page)).classList.add('active');
-    window.scrollTo(0, 0);
+    // 1. Alle Seiten-Container finden
+    const pages = document.querySelectorAll('.page');
+    const targetId = 'page-' + (page === 'home' ? 'home' : page);
+    const targetPage = document.getElementById(targetId);
+
+    if (targetPage) {
+      // 2. Alle verstecken, Zielseite zeigen
+      pages.forEach(p => p.classList.remove('active'));
+      targetPage.classList.add('active');
+
+      // 3. URL in der Adresszeile aktualisieren
+      if (page !== 'home' && page !== '') {
+        window.location.hash = page;
+      } else {
+        // Falls Home, Hash entfernen
+        history.pushState("", document.title, window.location.pathname);
+      }
+      
+      // 4. Nach oben springen
+      window.scrollTo(0, 0);
+    }
     return false;
   }
+
+  // Beim ersten Laden der Seite prüfen, ob ein Hash (z.B. #agb) in der URL ist
+  window.addEventListener('load', function() {
+    const hash = window.location.hash.replace('#', '');
+    if (hash && document.getElementById('page-' + hash)) {
+      showPage(hash);
+    } else {
+      showPage('home');
+    }
+  });
+
+  // Ermöglicht die Navigation über den "Zurück"-Button des Browsers
+  window.addEventListener('popstate', function() {
+    const hash = window.location.hash.replace('#', '');
+    showPage(hash || 'home');
+  });
+</script>
 
   document.querySelectorAll('a[href^="#"]').forEach(a => {
     const href = a.getAttribute('href');
