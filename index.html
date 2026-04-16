@@ -967,86 +967,92 @@
 </footer>
 
 <script>
+  // 1. HAUPTFUNKTION: SEITENWECHSEL
   function showPage(page) {
-    // 1. Alle Seiten-Container finden
     const pages = document.querySelectorAll('.page');
-    const targetId = 'page-' + (page === 'home' ? 'home' : page);
+    const targetId = 'page-' + (page === 'home' || page === '' ? 'home' : page);
     const targetPage = document.getElementById(targetId);
 
     if (targetPage) {
-      // 2. Alle verstecken, Zielseite zeigen
       pages.forEach(p => p.classList.remove('active'));
       targetPage.classList.add('active');
 
-      // 3. URL in der Adresszeile aktualisieren
+      // URL in der Adresszeile aktualisieren
       if (page !== 'home' && page !== '') {
         window.location.hash = page;
       } else {
-        // Falls Home, Hash entfernen
         history.pushState("", document.title, window.location.pathname);
       }
-      
-      // 4. Nach oben springen
       window.scrollTo(0, 0);
     }
     return false;
   }
 
-  // Beim ersten Laden der Seite prüfen, ob ein Hash (z.B. #agb) in der URL ist
+  // 2. INITIALISIERUNG & EVENT LISTENER
   window.addEventListener('load', function() {
+    // Prüfen ob ein Hash (z.B. #agb) in der URL ist
     const hash = window.location.hash.replace('#', '');
     if (hash && document.getElementById('page-' + hash)) {
       showPage(hash);
     } else {
       showPage('home');
     }
+
+    // Sanftes Scrollen für interne Anker-Links (Features, Preise etc.)
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      const href = a.getAttribute('href');
+      // Wir filtern die rechtlichen Seiten aus, damit diese nicht scrollen sondern umschalten
+      const legalPages = ['#impressum', '#datenschutz', '#agb', '#support'];
+      
+      if (href && href.length > 1 && !legalPages.includes(href) && !href.includes('LINK_HIER')) {
+        a.addEventListener('click', function(e) {
+          const target = document.querySelector(href);
+          if (target) {
+            e.preventDefault();
+            showPage('home'); // Sicherstellen, dass wir auf der Home-Seite sind
+            setTimeout(() => target.scrollIntoView({ behavior: 'smooth' }), 50);
+          }
+        });
+      }
+    });
   });
 
-  // Ermöglicht die Navigation über den "Zurück"-Button des Browsers
-  window.addEventListener('popstate', function() {
-    const hash = window.location.hash.replace('#', '');
-    showPage(hash || 'home');
-  });
-</script>
-
-  document.querySelectorAll('a[href^="#"]').forEach(a => {
-    const href = a.getAttribute('href');
-    if (href && href.length > 1 && !href.includes('LINK_HIER')) {
-      a.addEventListener('click', function(e) {
-        const target = document.querySelector(href);
-        if (target) {
-          e.preventDefault();
-          showPage('home');
-          setTimeout(() => target.scrollIntoView({ behavior: 'smooth' }), 50);
-        }
-      });
-    }
-  });
-
-  document.querySelectorAll('.footer-col a, .footer-bottom a').forEach(a => {
-    if (!a.getAttribute('onclick') && !a.getAttribute('href').includes('#')) return;
-  });
-
+  // 3. NAVIGATION & MENÜ (Mobile)
   function toggleMenu() {
     const links = document.querySelector('.nav-links');
-    links.style.display = links.style.display === 'flex' ? 'none' : 'flex';
-    links.style.flexDirection = 'column';
-    links.style.position = 'absolute';
-    links.style.top = '68px';
-    links.style.left = '0';
-    links.style.right = '0';
-    links.style.background = 'rgba(13,61,42,0.98)';
-    links.style.padding = '20px 5%';
-    links.style.gap = '20px';
+    if (!links) return;
+    
+    if (links.style.display === 'flex') {
+      links.style.display = 'none';
+    } else {
+      links.style.display = 'flex';
+      links.style.flexDirection = 'column';
+      links.style.position = 'absolute';
+      links.style.top = '68px';
+      links.style.left = '0';
+      links.style.right = '0';
+      links.style.background = 'rgba(13,61,42,0.98)';
+      links.style.padding = '20px 5%';
+      links.style.gap = '20px';
+    }
   }
 
+  // 4. SCROLL-EFFEKT FÜR NAV-BAR
   window.addEventListener('scroll', () => {
     const nav = document.getElementById('main-nav');
+    if (!nav) return;
+    
     if (window.scrollY > 50) {
       nav.style.background = 'rgba(13,61,42,0.98)';
     } else {
       nav.style.background = 'rgba(13,61,42,0.95)';
     }
+  });
+
+  // 5. ZURÜCK-BUTTON DES BROWSERS UNTERSTÜTZEN
+  window.addEventListener('popstate', function() {
+    const hash = window.location.hash.replace('#', '');
+    showPage(hash || 'home');
   });
 </script>
 </body>
